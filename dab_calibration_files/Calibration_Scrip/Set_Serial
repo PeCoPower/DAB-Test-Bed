@@ -1,0 +1,94 @@
+var setSerial="100001201\r"
+
+
+if(!('Protocol' in this)) throw "Please open the Protocol tool";
+Protocol.Mode.text = "UART" // make sure UART tab is selected
+Protocol.UART.Receiver() // reset receive
+
+Protocol.UART.Send("A",false) // send text with ending
+var rx=Protocol.UART.Receive()
+var n=rx.search("t")
+while(n==-1)
+{
+var rx=Protocol.UART.Receive()
+var n=rx.search("t")
+}
+
+
+print('Set Serial = '+ setSerial)
+Protocol.UART.Send(setSerial,false) // send text with ending
+
+
+Protocol.UART.Send("a",false) // send text with ending
+var rx=Protocol.UART.Receive()
+var n=rx.search("\r")
+
+while(n==-1)
+{
+rx=rx+Protocol.UART.Receive()
+var n=rx.search("\r")
+}
+
+var a = parseFloat(rx)
+print('Stored Serial = '+a)
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+Protocol.UART.Send("B",false) // send text with ending
+var rx=Protocol.UART.Receive()
+var n=rx.search("t")
+while(n==-1)
+{
+var rx=Protocol.UART.Receive()
+var n=rx.search("t")
+}
+var setHWV="3.0001\r"
+
+print('Set HWV = '+ setHWV)
+Protocol.UART.Send(setHWV,false) // send text with ending
+
+
+Protocol.UART.Send("b",false) // send text with ending
+var rx=Protocol.UART.Receive()
+var n=rx.search("\r")
+
+while(n==-1)
+{
+rx=rx+Protocol.UART.Receive()
+var n=rx.search("\r")
+}
+
+var a = parseFloat(rx)
+print('Stored HWV = '+a)
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+Protocol.UART.Send("C",false) // send text with ending
+var rx=Protocol.UART.Receive()
+var n=rx.search("t")
+while(n==-1)
+{
+var rx=Protocol.UART.Receive()
+var n=rx.search("t")
+}
+var setSWV="1.0001\r"
+
+print('Set SWV = '+ setSWV)
+Protocol.UART.Send(setSWV,false) // send text with ending
+
+
+Protocol.UART.Send("c",false) // send text with ending
+var rx=Protocol.UART.Receive()
+var n=rx.search("\r")
+
+while(n==-1)
+{
+rx=rx+Protocol.UART.Receive()
+var n=rx.search("\r")
+}
+
+var a = parseFloat(rx)
+print('Stored SWV = '+a)

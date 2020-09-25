@@ -1,0 +1,169 @@
+//Adjust resistor Valua and max voltage on VBUS1 Cal
+
+if(!('Protocol' in this)) throw "Please open the Protocol tool";
+Protocol.Mode.text = "UART" // make sure UART tab is selected
+Protocol.UART.Receiver() // reset receive
+
+Protocol.UART.Send("L",false) // send text with ending
+var rx=Protocol.UART.Receive()
+var n=rx.search("t")
+while(n==-1)
+{
+var rx=Protocol.UART.Receive()
+var n=rx.search("t")
+}
+
+
+//turn on positive supply and voltmeter
+Supplies.MasterEnable.checked=true
+Voltmeter.run()
+
+var DAB_measurement=[]
+var MM_measurement=[]
+//run loop 4 times step voltage in increment of 0,5V
+
+var DCVAL=1.2;
+for(var i = 0; i < 4; i++)
+{
+Supplies.Output.PositiveSupply.Voltage.value=DCVAL
+wait(3500)
+var C_Meter=Voltmeter.Input.Channel2.DC.value
+C_Meter=C_Meter*(1/140.8)*(-250)
+
+var V_Meter=Voltmeter.Input.Channel1.DC.value
+var P=C_Meter*V_Meter-2.2
+
+Protocol.UART.Send("M",false) // send text with ending
+var rx=Protocol.UART.Receive()
+var n=rx.search("\r")
+
+while(n==-1)
+{
+rx=rx+Protocol.UART.Receive()
+var n=rx.search("\r")
+}
+
+if(rx.search("-")!=-1){
+var a = parseFloat(rx.substring(rx.search("-"),rx.length)) 
+print(a)
+MM_measurement.push(P)
+DAB_measurement.push(a)
+}
+DCVAL=DCVAL+1
+}
+
+
+Protocol.UART.Send("E",false) // send text with ending
+
+print(DAB_measurement)
+print(MM_measurement)
+
+//////////////////////////////////////////////////////////////////////
+function wait(ms){
+   var start = new Date().getTime();
+   var end = start;
+   while(end < start + ms) {
+     end = new Date().getTime();
+  }
+}
+
+///////////////////////////////////////////////////////////////////
+var x = DAB_measurement;
+var y = MM_measurement;
+
+var linearObj = {
+    slope: 0,
+    intercept: 0
+}
+
+function linearRegression(y,x){
+        var n = y.length;
+        var sum_x = 0;
+        var sum_y = 0;
+        var sum_xy = 0;
+        var sum_xx = 0;
+        var sum_yy = 0;
+
+        for (var i = 0; i < y.length; i++) {
+
+            sum_x += x[i];
+            sum_y += y[i];
+            sum_xy += (x[i]*y[i]);
+            sum_xx += (x[i]*x[i]);
+            sum_yy += (y[i]*y[i]);
+        }
+
+        linearObj.slope = (n * sum_xy - sum_x * sum_y) / (n*sum_xx - sum_x * sum_x);
+        linearObj.intercept = (sum_y - linearObj.slope * sum_x)/n;
+
+}
+
+linearRegression(y,x);
+
+print('m value = ' + linearObj.slope)
+print('c value = ' + linearObj.intercept)
+var mVal=linearObj.slope
+var cVal=linearObj.intercept
+
+Protocol.UART.Send("H",false) // send text with ending
+var rx=Protocol.UART.Receive()
+var n=rx.search("t")
+while(n==-1)
+{
+var rx=Protocol.UART.Receive()
+var n=rx.search("t")
+}
+
+var temp=mVal.toString()
+temp=temp+"\r"
+
+Protocol.UART.Send(temp,false) // send text with ending
+
+
+Protocol.UART.Send("h",false) // send text with ending
+var rx=Protocol.UART.Receive()
+var n=rx.search("\r")
+
+while(n==-1)
+{
+rx=rx+Protocol.UART.Receive()
+var n=rx.search("\r")
+}
+
+var a = parseFloat(rx)
+print('stored c value = '+a)
+
+
+
+
+
+Protocol.UART.Send("I",false) // send text with ending
+var rx=Protocol.UART.Receive()
+var n=rx.search("t")
+while(n==-1)
+{
+var rx=Protocol.UART.Receive()
+var n=rx.search("t")
+}
+
+var temp=cVal.toString()
+temp=temp+"\r"
+Protocol.UART.Send(temp,false) // send text with ending
+
+
+Protocol.UART.Send("i",false) // send text with ending
+var rx=Protocol.UART.Receive()
+var n=rx.search("\r")
+
+while(n==-1)
+{
+rx=rx+Protocol.UART.Receive()
+var n=rx.search("\r")
+}
+
+var a = parseFloat(rx)
+print('stored c value = '+a)
+
+
+
+
